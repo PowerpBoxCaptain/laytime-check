@@ -1,0 +1,22 @@
+{
+  "_about": "A made-up discharge to show the inputs. Times are port local, YYYY-MM-DDTHH:MM, no offset.",
+  "vessel": "MV EXAMPLE STAR",
+  "port": "discharge, example port",
+  "quantity": 42000,
+  "rate_per_day": 8000,
+  "terms": "SHEX",
+  "holidays": ["2026-06-10"],
+  "nor_tendered": "2026-06-01T09:20",
+  "commencement": { "rule": "turn_time", "hours": 12 },
+  "completed": "2026-06-09T16:30",
+  "stoppages": [
+    { "from": "2026-06-03T14:00", "to": "2026-06-03T19:30", "reason": "rain, hatches closed" },
+    { "from": "2026-06-04T08:00", "to": "2026-06-05T08:00", "reason": "crane no.2 breakdown, 3 of 4 working", "count_fraction": 0.75 },
+    { "from": "2026-06-08T10:00", "to": "2026-06-08T12:00", "reason": "ship's gear breakdown (excepted on demurrage too)", "on_demurrage": true }
+  ],
+  "demurrage_rate_per_day": 18000,
+  "despatch_rate_per_day": 9000,
+  "currency": "USD",
+  "despatch_basis": "laytime_saved",
+  "once_on_demurrage": true
+}
