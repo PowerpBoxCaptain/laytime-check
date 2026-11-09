@@ -52,6 +52,52 @@ Whether a NOR was valid, whether a stoppage is excepted, whether a clause also c
 a disputed SOF entry is right. Give it each reading and compare the statements. It is arithmetic, not a legal
 opinion. Times are port local; a voyage that crosses a clock change needs the times written in one local time.
 
+## When the documents allow more than one reading: `engine/`
+
+`laytime.mjs` works one statement. A dispute usually needs several: the NOR valid or not, a rider's weather
+clause against the recap's, a stop that each side blames on the other. `engine/` (TypeScript, Node 20+) takes a
+**case**: the agreed terms, the stoppages both sides accept, and each disputed point with the readings the
+documents allow. It computes every combination, minute by minute, and shows how far each point moves the money.
+
+**Checking someone else's figure.** Give the case and the figure on their sheet. The answer is one of:
+
+- `agrees`: the readings they named give their figure;
+- `reproduced`: they named none, and these readings give it (so you can see which reading they took on each point);
+- `agrees-under-other-readings`: the readings they named don't give it, but others do;
+- `differs`: no reading gives it. You get the nearest reading and the difference, and its ledger to compare line by line;
+- `null`: the documents don't give enough for a figure.
+
+Every answer comes with a ledger: each stretch of time, counted or excluded, with the SOF line and clause behind it.
+
+```sh
+cd engine && npm install
+npm test               # engine tests
+npm run reconcile      # the engine against laytime.mjs on every hand-worked case: both must agree
+npm run mcp            # MCP server (stdio): tools laytime_check and laytime_case
+npm run form           # builds dist/laytime-check.html, a form that runs entirely in the browser
+```
+
+**MCP.** `npm run mcp` runs on your own machine, so your charter parties and SOFs never leave it. Add it to
+Claude Code with `claude mcp add laytime -- npx tsx /path/to/laytime-check/engine/src/mcp.ts`.
+
+**Form.** `dist/laytime-check.html` is one self-contained page:
+- the charter party, riders and recap, in order of precedence, with a disputed tick where they differ;
+- the SOF rows by category, and any other disputed points;
+- your sheet's figure.
+
+Cases are kept in that browser only. The printed forms (GENCON, AMWELSH, NORGRAIN, ASBATANKVOY and others) are seeded
+with their *typical* positions, from general knowledge of each form, marked "confirm against your copy". No form's
+text is reproduced: paste your own clause.
+
+**Rule tags in the output.**
+- `CHRT-006`: every figure carries its derivation.
+- `CHRT-007`: once on demurrage, always on demurrage.
+- `CHRT-008`: no number from an underdetermined record. NULL, never a guess.
+
+**Two implementations.** `laytime.mjs` (clean-room, no dependencies) and `engine/` were written separately.
+`npm run reconcile` runs every hand-worked case through both. Comparing them found two bugs in the engine (despatch
+on all time saved; a missing despatch rate giving 0 instead of NULL). Both are fixed, and all 32 cases agree.
+
 ## Use
 
 ```sh

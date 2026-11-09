@@ -43,3 +43,18 @@ Exit codes: `0` complete · `2` a NULL (name the missing input to the user) · `
   for the parties.
 - Never fill a missing rate, quantity or time to get a number. Say what is missing.
 - Say that the figures are worked from the inputs given and are not a legal opinion.
+
+## When the documents allow more than one reading
+
+For a dispute, or to check someone else's figure, use the engine in `engine/`:
+- the MCP tool `laytime_check` (`npm run mcp` in `engine/`);
+- or `checkSheet()` from `engine/src/index.ts`.
+
+Build a case: the agreed terms, quoted clauses, stoppages both sides accept, and one point per disputed matter, with
+a reading for each side. Then give the figure from the sheet being checked. Report:
+- the verdict;
+- which readings reproduce the figure, or the nearest reading and the difference;
+- the swing per point;
+- the ledger lines that decide it.
+
+Never say which reading is right.

@@ -1,0 +1,27 @@
+{
+  "name": "laytime-check-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Laytime, demurrage and despatch from charter-party terms and statement-of-facts events. Every hour traced to its SOF line and clause; NULL where the documents are silent.",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "reconcile": "tsx scripts/reconcile.ts",
+    "mcp": "tsx src/mcp.ts",
+    "form": "node form/build.mjs"
+  },
+  "license": "AGPL-3.0-only",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  }
+}

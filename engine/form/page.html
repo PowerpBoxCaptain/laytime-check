@@ -1,0 +1,162 @@
+<title>Laytime Check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a logbook page. Left, the entries in the order a laytime statement is built; right, the result pinned beside them. */
+:root {
+  --bg: #f2f4f1; --surface: #ffffff; --ink: #16212a; --muted: #5d6a70; --rule: #cdd5d1; --accent: #0b6e6e; --accent-ink: #ffffff;
+  --good: #2c7a4b; --bad: #b0393a; --amber: #9a6200; --good-bg: #e5f2ea; --bad-bg: #f8e7e6; --amber-bg: #f7eedb; --hit: #e2f0ef;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1518; --surface: #172126; --ink: #e2e8e5; --muted: #93a19f; --rule: #2c3a3f; --accent: #4fb3ad; --accent-ink: #0c1a1a;
+  --good: #6cc492; --bad: #ec7f7c; --amber: #e3ad55; --good-bg: #16301f; --bad-bg: #3a1c1c; --amber-bg: #33270f; --hit: #173232; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1518; --surface: #172126; --ink: #e2e8e5; --muted: #93a19f; --rule: #2c3a3f; --accent: #4fb3ad; --accent-ink: #0c1a1a;
+  --good: #6cc492; --bad: #ec7f7c; --amber: #e3ad55; --good-bg: #16301f; --bad-bg: #3a1c1c; --amber-bg: #33270f; --hit: #173232; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); margin: 0 }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; max-width: 1480px; margin: 0 auto }
+header.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; padding-block: 24px 16px; border-bottom: 2px solid var(--ink) }
+h1 { font: 600 2rem/1.1 var(--display); letter-spacing: .01em; margin: 0; text-wrap: balance }
+h1 + p { margin: 6px 0 0; color: var(--muted); max-width: 62ch }
+h2 { font: 600 1.15rem/1.2 var(--display); letter-spacing: .02em; text-transform: uppercase; margin: 0; display: flex; gap: 10px; align-items: baseline }
+h2 .no { font: 500 .85rem var(--mono); color: var(--accent) }
+h3 { font: 600 .8rem/1.2 var(--display); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 20px 0 8px }
+.casebar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0 }
+.casebar select { width: auto; flex: 1 1 14em; max-width: 26em }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 24px }
+@media (min-width: 1100px) { .layout { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) } aside.res { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto } }
+section.step { display: grid; gap: 12px; padding-block: 18px; border-top: 1px solid var(--rule) }
+section.step:first-child { border-top: 0; padding-top: 0 }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px }
+.wide { grid-column: 1 / -1 }
+.fld { display: grid; gap: 4px; min-width: 0 }
+.fld > span { font-size: .78rem; color: var(--muted); letter-spacing: .02em }
+.fld em { font-style: normal; opacity: .8 }
+input, select, textarea, button { font: inherit; color: inherit }
+input, select, textarea { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px; min-width: 0; width: 100% }
+input[type=datetime-local], .tbl input, .tbl select, .tbl textarea { font-family: var(--mono); font-size: .82rem }
+input[type=checkbox] { width: auto; accent-color: var(--accent) }
+textarea { resize: vertical }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, tr[tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px }
+button { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); border-radius: 4px; padding: 6px 12px; cursor: pointer; white-space: nowrap }
+button.ghost { background: transparent; color: var(--ink); border-color: var(--rule) }
+button.ghost:hover { border-color: var(--accent); color: var(--accent) }
+button:disabled { opacity: .35; cursor: default }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.row select { width: auto; flex: 1 1 10em; min-width: 0; max-width: 28em }
+.row.mini input[type=datetime-local] { width: 13.5em }
+.row.mini input:not([type]) { flex: 1 1 12em; width: auto }
+.chk { display: flex; gap: 8px; align-items: center; font-size: .88rem }
+.note { color: var(--muted); font-size: .85rem; margin: 0; max-width: 72ch }
+.note.ex { color: var(--amber); background: var(--amber-bg); padding: 8px 10px; border-radius: 4px; max-width: none }
+.muted { color: var(--muted) }
+.tbl { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface) }
+table { border-collapse: collapse; width: 100%; font-size: .88rem }
+th { text-align: left; font: 600 .72rem var(--display); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 8px; border-bottom: 1px solid var(--rule); white-space: nowrap }
+td { padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top }
+tr:last-child td { border-bottom: 0 }
+td input, td select, td textarea { min-width: 7em }
+td input.short { min-width: 5.5em; width: 6.5em }
+input.tiny { width: 4.5em; min-width: 0 }
+table.sof td input[type=datetime-local] { min-width: 13.5em }
+td.cr { white-space: nowrap }
+.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap }
+.cite { font: .75rem var(--mono); color: var(--muted) }
+tr.clash td { background: var(--amber-bg) }
+.typ { margin-left: 6px; font: .68rem var(--mono); color: var(--amber); border: 1px solid currentColor; border-radius: 3px; padding: 0 4px; vertical-align: 1px }
+article.src { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); padding: 10px 12px 12px; display: grid; gap: 10px }
+article.src header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.rank { font: 600 .8rem var(--mono); background: var(--ink); color: var(--bg); border-radius: 3px; padding: 1px 7px }
+.srcname { font: 600 1rem var(--display); border-color: transparent; background: transparent; flex: 1 1 12em; width: auto }
+.srcname:hover { border-color: var(--rule) }
+.kind { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em }
+.tools { display: flex; gap: 4px; margin-left: auto }
+.tools button { padding: 3px 8px }
+.reading { border-left: 3px solid var(--rule); padding-left: 10px; display: grid; gap: 8px }
+aside.res { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; min-width: 0 }
+aside.res > h2 { margin-bottom: 4px }
+.pill { display: inline-block; font: 600 .75rem var(--display); text-transform: uppercase; letter-spacing: .06em; padding: 3px 9px; border-radius: 999px }
+.pill.good { background: var(--good); color: var(--surface) } .pill.bad { background: var(--bad); color: var(--surface) } .pill.amber { background: var(--amber-bg); color: var(--amber) }
+.verdict { border-radius: 6px; padding: 12px 14px; margin-top: 12px; display: grid; gap: 6px }
+.verdict p { margin: 0 }
+.verdict.good { background: var(--good-bg) } .verdict.bad { background: var(--bad-bg) } .verdict.amber { background: var(--amber-bg) }
+.problems { background: var(--amber-bg); border-radius: 6px; padding: 10px 14px; margin-top: 12px }
+.problems h3 { margin-top: 0; color: var(--amber) }
+.problems ul { margin: 0; padding-left: 18px }
+.big { font: 500 1.25rem/1.3 var(--mono); margin: 0; font-variant-numeric: tabular-nums }
+.big span { font: .9rem var(--body); color: var(--muted) }
+ul.swing { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+ul.swing li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(60px, 1fr) auto; gap: 10px; align-items: center; font-size: .86rem }
+.bar { height: 10px; background: var(--bg); border-radius: 2px; overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--accent) }
+.num { font: .82rem var(--mono); font-variant-numeric: tabular-nums }
+table.cells tr { cursor: pointer }
+table.cells tr.hit td { background: var(--hit) }
+table.cells tr.on td:first-child { box-shadow: inset 3px 0 0 var(--accent) }
+.k { color: var(--muted); font-size: .75rem }
+pre.ledger { font: .76rem/1.55 var(--mono); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; overflow-x: auto; white-space: pre; margin: 0 }
+#io { position: fixed; inset: 0; background: color-mix(in srgb, var(--ink) 40%, transparent); display: grid; place-items: center; z-index: 20;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) }
+#io .box { background: var(--surface); border-radius: 8px; padding: 16px; width: min(760px, 100%); display: grid; gap: 10px }
+#io textarea { height: 50vh; font: .78rem var(--mono) }
+#toast { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 4px; z-index: 30; max-width: calc(100% - 32px) }
+footer { margin-top: 32px; color: var(--muted); font-size: .8rem; border-top: 1px solid var(--rule); padding-top: 12px; max-width: 90ch }
+@media (prefers-reduced-motion: no-preference) { .bar i { transition: width .3s ease } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Laytime Check</h1>
+      <p>Enter the charter party, its riders and the statement of facts. Every reading the documents allow is computed, minute by minute, and any sheet is checked against them.</p>
+    </div>
+    <div class="casebar">
+      <select id="caseSel" aria-label="Saved cases"></select>
+      <button type="button" data-act="save">Save</button>
+      <button type="button" class="ghost" data-act="new">New</button>
+      <button type="button" class="ghost" data-act="dup">Duplicate</button>
+      <button type="button" class="ghost" data-act="del">Delete</button>
+      <button type="button" class="ghost" data-act="export">Copy as JSON</button>
+      <button type="button" class="ghost" data-act="import">Paste a case</button>
+      <button type="button" class="ghost" data-act="example">Example</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main>
+      <section class="step"><h2><span class="no">1</span>Voyage and rates</h2><div id="voyage"></div></section>
+      <section class="step"><h2><span class="no">2</span>Charter party, riders, recap</h2><div id="sources" style="display:grid;gap:12px"></div></section>
+      <section class="step"><h2><span class="no">3</span>How the terms resolve</h2><div id="resolution"></div></section>
+      <section class="step"><h2><span class="no">4</span>NOR and times</h2><div id="nor"></div></section>
+      <section class="step"><h2><span class="no">5</span>Statement of facts</h2><div id="sof"></div></section>
+      <section class="step"><h2><span class="no">6</span>Other disputed points</h2><div id="disputes" style="display:grid;gap:12px"></div></section>
+      <section class="step"><h2><span class="no">7</span>The sheet to check</h2><div id="sheet"></div></section>
+    </main>
+    <aside class="res" aria-live="polite">
+      <h2>Result</h2>
+      <div id="result"></div>
+    </aside>
+  </div>
+
+  <footer>
+    Cases stay in this browser only; nothing is sent anywhere. Use "Copy as JSON" to keep a copy. Positions marked
+    <span class="typ">typical</span> are what the printed form commonly provides, from general knowledge of the form: confirm
+    each against your own copy and paste the clause. The calculation counts minute by minute and does not round; which reading
+    is right is for the parties, their advisers or a tribunal to decide.
+  </footer>
+</div>
+
+<div id="io" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="io-note">
+  <p id="io-note" class="note"></p>
+  <textarea id="io-text" spellcheck="false"></textarea>
+  <div class="row"><button type="button" id="io-copy" data-act="copy">Copy</button><button type="button" id="io-load" data-act="load">Load</button>
+  <button type="button" class="ghost" data-act="closeio">Close</button><button type="button" class="ghost" data-act="mcp">Show engine case file</button></div>
+</div></div>
+<div id="toast" hidden></div>
+<script>/*BUNDLE*/</script>
