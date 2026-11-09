@@ -34,7 +34,7 @@ export interface LaytimeResultParams {
 export interface LaytimeResult {
   usedHours: number;
   result: string;
-  amountDue: number;
+  amountDue: number | null; // null: the rate that applies (demurrage or despatch) is not in the record (CHRT-008)
 }
 
 export interface ReversibleLaytimeEntry {
@@ -48,7 +48,7 @@ export interface ReversibleLaytimeResult {
   totalAllowed: number;
   totalUsed: number;
   result: string;
-  amountDue: number;
+  amountDue: number | null; // null: the rate that applies is not in the record (CHRT-008)
 }
 
 // ─── Commencement Time ───────────────────────────────────────────────────────
@@ -278,6 +278,7 @@ function buildExclusionReason(
  *
  * - usedHours = grossHours - excludedHours
  * - Rates are per day, so the excess/saving in hours is divided by 24.
+ * - A missing rate gives amountDue null, never 0: "no rate in the record" is not "nothing due" (CHRT-008).
  */
 export function calculateLaytimeResult(params: LaytimeResultParams): LaytimeResult {
   const { allowedHours, grossHours, excludedHours, demurrageRate, despatchRate } = params;
@@ -286,12 +287,12 @@ export function calculateLaytimeResult(params: LaytimeResultParams): LaytimeResu
   const diff = usedHours - allowedHours;
 
   if (diff > 0) {
-    const amountDue = demurrageRate != null ? (diff / 24) * demurrageRate : 0;
+    const amountDue = demurrageRate != null ? (diff / 24) * demurrageRate : null;
     return { usedHours, result: 'on_demurrage', amountDue };
   }
 
   if (diff < 0) {
-    const amountDue = despatchRate != null ? (Math.abs(diff) / 24) * despatchRate : 0;
+    const amountDue = despatchRate != null ? (Math.abs(diff) / 24) * despatchRate : null;
     return { usedHours, result: 'on_despatch', amountDue };
   }
 
@@ -338,12 +339,12 @@ export function calculateReversibleLaytime(
   const despatchRate = calculations.find((c) => c.despatchRate != null)?.despatchRate ?? null;
 
   if (diff > 0) {
-    const amountDue = demurrageRate != null ? (diff / 24) * demurrageRate : 0;
+    const amountDue = demurrageRate != null ? (diff / 24) * demurrageRate : null;
     return { totalAllowed, totalUsed, result: 'on_demurrage', amountDue };
   }
 
   if (diff < 0) {
-    const amountDue = despatchRate != null ? (Math.abs(diff) / 24) * despatchRate : 0;
+    const amountDue = despatchRate != null ? (Math.abs(diff) / 24) * despatchRate : null;
     return { totalAllowed, totalUsed, result: 'on_despatch', amountDue };
   }
 
