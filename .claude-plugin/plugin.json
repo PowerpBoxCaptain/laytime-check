@@ -1,0 +1,10 @@
+{
+  "name": "laytime-check",
+  "description": "Work out a laytime statement (time allowed, time used, demurrage or despatch) from charter-party terms and a statement of facts, with every figure shown and nothing assumed. Use when the user gives laytime terms, a NOR, an SOF or stoppages and asks for laytime, demurrage, despatch or a time sheet, or asks to check someone else's laytime calculation.",
+  "author": {
+    "name": "Capt. Anil Sharma"
+  },
+  "homepage": "https://github.com/PowerpBoxCaptain/laytime-check",
+  "repository": "https://github.com/PowerpBoxCaptain/laytime-check",
+  "license": "AGPL-3.0-only"
+}
