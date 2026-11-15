@@ -1,0 +1,44 @@
+{
+  "schema": "skill-needs-v1",
+  "skill": "laytime-check",
+  "written": "2026-11-15, by hand, from this SKILL.md",
+  "act": "local-write",
+  "tools": [
+    "Bash",
+    "Read",
+    "Grep",
+    "Glob",
+    "Write"
+  ],
+  "read_paths": [
+    "{home}/**",
+    "{project}/**",
+    "{skill}/**",
+    "{tmp}/**"
+  ],
+  "write_paths": [
+    "{project}/**",
+    "{tmp}/**"
+  ],
+  "forbid_paths": [],
+  "network": "none",
+  "outward_acts": [],
+  "bash": {
+    "forbid": [
+      {
+        "re": "^\\s*git\\s+(-C\\s+\\S+\\s+)?(push|reset|rebase|stash|clean|restore|checkout\\s+--)\\b",
+        "why": "destructive or outward git"
+      },
+      {
+        "re": "^\\s*rm\\s+-[a-zA-Z]*r",
+        "why": "recursive delete"
+      },
+      {
+        "re": "^\\s*(sendmail|mailx?|mutt|msmtp|swaks)\\s|^\\s*curl\\b.*\\bsmtps?://",
+        "why": "outward mail"
+      }
+    ],
+    "commit_paths_in_write_scope": false
+  },
+  "note": "Paths: {project} is the folder the session works in, {skill} this skill's folder, {home} the home folder, {tmp} the temp folder. Writes the voyage file; laytime.mjs and the engine compute locally."
+}
